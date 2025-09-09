@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AutoSellBilet.ViewModels"
+             x:Class="AutoSellBilet.Views.MainView"
+             x:DataType="vm:MainViewModel">
+
+	<StackPanel Margin="20" Spacing="10">
+		<TextBlock Text="{Binding Greeting}" FontSize="16" FontWeight="Bold"/>
+
+		<StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding CurrentUser}">
+			<TextBlock Text="Вы вошли как:" FontWeight="Bold"/>
+			<TextBlock Text="{Binding CurrentUser.Name}"/>
+		</StackPanel>
+
+		<TextBlock Text="Фильм" FontWeight="Bold"/>
+		<ComboBox ItemsSource="{Binding Kino}"
+                  SelectedItem="{Binding SelectedFilm}">
+			<ComboBox.ItemTemplate>
+				<DataTemplate>
+					<StackPanel Orientation="Horizontal" Spacing="5">
+						<TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+						<TextBlock Text="{Binding Nomer_zala}" Foreground="Gray"/>
+						<TextBlock Text="{Binding Vrema, StringFormat='{}{0:dd.MM HH:mm}'}" Foreground="Gray"/>
+					</StackPanel>
+				</DataTemplate>
+			</ComboBox.ItemTemplate>
+		</ComboBox>
+
+		<TextBlock Text="Номер зала" FontWeight="Bold"/>
+		<TextBlock Text="{Binding HallNumber}" FontSize="14"/>
+
+		<TextBlock Text="Место" FontWeight="Bold"/>
+		<ComboBox ItemsSource="{Binding _seans}"
+                  SelectedItem="{Binding SelectedSeat}">
+			<ComboBox.ItemTemplate>
+				<DataTemplate>
+					<StackPanel Orientation="Horizontal" Spacing="5">
+						<TextBlock Text="Ряд:"/>
+						<TextBlock Text="{Binding RowNumber}" FontWeight="Bold"/>
+						<TextBlock Text="Место:"/>
+						<TextBlock Text="{Binding MestoNumber}" FontWeight="Bold"/>
+					</StackPanel>
+				</DataTemplate>
+			</ComboBox.ItemTemplate>
+		</ComboBox>
+
+		<TextBlock Text="Информация о билете" FontWeight="Bold"/>
+		<TextBlock Text="{Binding PriceInfo}" FontSize="14" Foreground="Green"/>
+
+		<Button Content="Купить билет" Command="{Binding BuyTicketCommand}" Margin="0 10"/>
+	</StackPanel>
+</UserControl>

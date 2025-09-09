@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="AutoSellBilet.LoginWindow"
+        Title="LoginWindow">
+
+	<Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+		<StackPanel VerticalAlignment="Center">
+			<TextBox Watermark="Login" x:Name="UserName"/>
+			<TextBox Watermark="Password" x:Name="UserPass"/>
+			<Button x:Name="KnopkaWhoda" Margin="25,15,0,5" Content="Вход" Click="KnopkaWhoda_Click"/>
+			<Button x:Name="KnopkaRega" Content="Регистрация" Click="KnopkaRega_Click"/>
+		</StackPanel>
+	</Grid>
+	
+</Window>
