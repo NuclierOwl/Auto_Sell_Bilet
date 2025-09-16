@@ -29,8 +29,7 @@ public partial class LoginWindow : Window
             {
                 next.Show();
                 this.Close();
-            }
-            else
+            } else
             {
                 AllNeded.Worning("¬веди логин и пароль", this);
             }

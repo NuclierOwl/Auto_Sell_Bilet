@@ -8,8 +8,8 @@ namespace AutoSellBilet.Dao
         public int zal_id { get; set; }
         public int row_number { get; set; }
         public int mesto_number { get; set; }
-        public string status { get; set; }
+        public string? status { get; set; }
 
-        public string DisplayText => $"Ряд {row_number}, Место {mesto_number} ({status})";
+        public string? Textik => $"Ряд {row_number}, Место {mesto_number} ({status})";
     }
 }

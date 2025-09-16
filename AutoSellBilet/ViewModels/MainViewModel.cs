@@ -1,5 +1,8 @@
 ﻿using AutoSellBilet.Dao;
 using AutoSellBilet.Hardik.Connector;
+using AutoSellBilet.Hardik.Dop;
+using AutoSellBilet.Hardik.Model;
+using Avalonia.Controls;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
@@ -10,23 +13,22 @@ namespace AutoSellBilet.ViewModels
     {
         private ObservableCollection<KinoDao> _films = new();
         private ObservableCollection<ZalsDao> _halls = new();
-        private ObservableCollection<UsersDao> _users = new();
+        private ObservableCollection<User> _users = new();
         private ObservableCollection<MestoDao> _seats = new();
         private ObservableCollection<SeansDao> _seans = new();
         private KinoDao _selectedFilm;
-        private UsersDao _selectedUser;
-        private UsersDao _currentUser;
+        private User _selectedUser;
+        private User _currentUser;
         private MestoDao _selectedSeat;
         private decimal _ticketPrice;
         private int _hallNumber;
         private string _priceInfo;
 
-        public MainViewModel(UsersDao currentUser = null)
+        public MainViewModel(User currentUser = null)
         {
             CurrentUser = currentUser;
             LoadData();
 
-            // Подписываемся на изменения выбранных элементов
             this.WhenAnyValue(x => x.SelectedFilm, x => x.SelectedSeat)
                 .Subscribe(_ => UpdateTicketInfo());
         }
@@ -35,7 +37,7 @@ namespace AutoSellBilet.ViewModels
             ? $"Добро пожаловать, {CurrentUser.Name}!"
             : "Система продажи билетов в кино";
 
-        public UsersDao CurrentUser
+        public User CurrentUser
         {
             get => _currentUser;
             set => this.RaiseAndSetIfChanged(ref _currentUser, value);
@@ -47,7 +49,7 @@ namespace AutoSellBilet.ViewModels
             set => this.RaiseAndSetIfChanged(ref _films, value);
         }
 
-        public ObservableCollection<UsersDao> Users
+        public ObservableCollection<User> Users
         {
             get => _users;
             set => this.RaiseAndSetIfChanged(ref _users, value);
@@ -67,12 +69,6 @@ namespace AutoSellBilet.ViewModels
                 this.RaiseAndSetIfChanged(ref _selectedFilm, value);
                 LoadSeatsForFilm();
             }
-        }
-
-        public UsersDao SelectedUser
-        {
-            get => _selectedUser;
-            set => this.RaiseAndSetIfChanged(ref _selectedUser, value);
         }
 
         public MestoDao SelectedSeat
@@ -104,9 +100,12 @@ namespace AutoSellBilet.ViewModels
             using (var db = new DateBaseConnection())
             {
                 Kino = new ObservableCollection<KinoDao>(db.GetAllKino());
-                Users = new ObservableCollection<UsersDao>(db.GetAllUsers());
+                //Users = new ObservableCollection<User>(db.GetAllUsers());
                 _halls = new ObservableCollection<ZalsDao>(db.GetAllZals());
+                Seats = new ObservableCollection<MestoDao>(db.GetAllMesta());
                 _seans = new ObservableCollection<SeansDao>(db.GetAllSeans());
+
+
             }
         }
 
@@ -120,8 +119,17 @@ namespace AutoSellBilet.ViewModels
 
             using (var db = new DateBaseConnection())
             {
-                var seats = db.GetSeatsByFilm(SelectedFilm.Name);
-                Seats = new ObservableCollection<MestoDao>(seats);
+                int sessionId = db.GetSeansIdForFilmAndTime(SelectedFilm.Name, SelectedFilm.vrema);
+
+                if (sessionId > 0)
+                {
+                    var seats = db.GetAvailableSeatsForSession(sessionId);
+                    Seats = new ObservableCollection<MestoDao>(seats);
+                }
+                else
+                {
+                    Seats.Clear();
+                }
             }
 
             UpdateHallInfo();
@@ -131,7 +139,7 @@ namespace AutoSellBilet.ViewModels
         {
             if (SelectedFilm != null && SelectedFilm.Nomer_zala.HasValue)
             {
-                HallNumber = (int)SelectedFilm.Nomer_zala.Value;
+                HallNumber = SelectedFilm.Nomer_zala.Value;
             }
             else
             {
@@ -162,23 +170,42 @@ namespace AutoSellBilet.ViewModels
 
         public bool BuyTicket()
         {
-            if (SelectedFilm == null || SelectedUser == null || SelectedSeat == null)
+            var curentUser = CurrentUser;
+           /* if (SelectedFilm == null || CurentUser == null || SelectedSeat == null)
+            {
                 return false;
+            }
+           */
 
             using (var db = new DateBaseConnection())
             {
-                int seansId = db.GetSeansIdForFilm(SelectedFilm.Name);
+                int seansId = db.GetSeansIdForFilmAndTime(SelectedFilm.Name, SelectedFilm.vrema);
 
                 if (seansId <= 0)
                     return false;
 
-                return db.AddBilet(
-                    SelectedSeat.Id,
-                    seansId,
-                    SelectedUser.guid,
-                    TicketPrice
-                );
+                int seansMestaId = db.GetSeansMestaId(seansId, SelectedSeat.Id);
+
+                if (seansMestaId <= 0)
+                    return false;
+
+                bool success = db.AddBilet(seansMestaId, CurrentUser.Guid, "актуален");
+
+                if (success)
+                {
+                    db.UpdateSeatStatus(seansMestaId, "занято");
+                    db.AddBiletBron(seansMestaId, SelectedFilm.Name, CurrentUser.Guid);
+
+                }
+
+                return success;
             }
+        }
+        public void Otmena()
+        {
+            var next = new OtmenaWindow(CurrentUser);
+
+            next.Show();
         }
     }
 }

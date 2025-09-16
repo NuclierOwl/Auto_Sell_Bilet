@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="200"
+        x:Class="AutoSellBilet.OtmenaWindow"
+        Title="OtmenaWindow">
+	<Grid ColumnDefinitions="*,*,*,*,*" HorizontalAlignment="Center" VerticalAlignment="Top" RowDefinitions="*,*,*,*,*">
+		<TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Text="Отмена бронирования"/>
+		<TextBlock Grid.Row="1"
+				  Grid.Column="0" Text="Бронь:"/>
+		<ListBox Grid.Row="2"
+				  Grid.Column="0"
+				 Grid.ColumnSpan="3"
+				  Name="ComboBron">
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<Grid RowDefinitions="*,*,*,*,*" ColumnDefinitions="auto,auto,auto,auto,auto">
+						<TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Film}"/>
+						<TextBlock Grid.Row="0" Grid.Column="1" Text="  ||  Место:"/>
+						<TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Mesto}"/>
+						<TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Status}"/>
+					</Grid>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+
+		<TextBlock Grid.Row="1"
+				  Grid.Column="1" Text="Билет:"/>
+		<ListBox Grid.Row="2"
+				  Grid.Column="1"
+				  Grid.ColumnSpan="3"
+				  Name="ComboBilet">
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<Grid RowDefinitions="*,*,*,*,*">
+						<TextBlock Grid.Row="0" Text="{Binding status}"/>
+					</Grid>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+		
+		<StackPanel
+			Grid.Row="3" Grid.Column="0"
+			Grid.RowSpan="3" Orientation="Horizontal">
+		<Button Click="OtmenaBilet_Click" Content="Отмена билета"/>
+		<Button Click="Nazad_Click" Content="Назад"/>
+	</StackPanel>
+	</Grid>
+</Window>

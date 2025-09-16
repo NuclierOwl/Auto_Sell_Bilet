@@ -22,7 +22,7 @@ public partial class RegistrationWindow : Window
 
         if (UserName == null && UserPass == null)
         {
-            await AllNeded.Message("Нет таких пользователей", this);
+            await AllNeded.Message("Нужно ввести данные", this);
             return;
         }
 
