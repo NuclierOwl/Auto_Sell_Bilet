@@ -34,7 +34,9 @@
 			<ListBox.ItemTemplate>
 				<DataTemplate>
 					<Grid RowDefinitions="*,*,*,*,*">
-						<TextBlock Grid.Row="0" Text="{Binding status}"/>
+						<TextBlock Grid.Row="0" Text="{Binding Status}"/>
+						<TextBlock Grid.Row="1" Text="{Binding RowNumber}"/>
+						<TextBlock Grid.Row="2" Text="{Binding MestoNumber}"/>
 					</Grid>
 				</DataTemplate>
 			</ListBox.ItemTemplate>

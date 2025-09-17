@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace AutoSellBilet.ViewModels
 {
@@ -171,15 +172,18 @@ namespace AutoSellBilet.ViewModels
         public bool BuyTicket()
         {
             var curentUser = CurrentUser;
-           /* if (SelectedFilm == null || CurentUser == null || SelectedSeat == null)
+           if (SelectedFilm == null || curentUser == null || SelectedSeat == null)
             {
                 return false;
             }
-           */
+
+           
 
             using (var db = new DateBaseConnection())
             {
                 int seansId = db.GetSeansIdForFilmAndTime(SelectedFilm.Name, SelectedFilm.vrema);
+                var bronik = db.GetAllBron();
+                var bron = bronik.FirstOrDefault(a=> a.film == SelectedFilm.Name);
 
                 if (seansId <= 0)
                     return false;
@@ -194,6 +198,8 @@ namespace AutoSellBilet.ViewModels
                 if (success)
                 {
                     db.UpdateSeatStatus(seansMestaId, "занято");
+
+                   // if (bron == null)
                     db.AddBiletBron(seansMestaId, SelectedFilm.Name, CurrentUser.Guid);
 
                 }

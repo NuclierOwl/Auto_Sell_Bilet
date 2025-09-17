@@ -6,7 +6,6 @@ using AutoSellBilet.Hardik.Dop;
 using Npgsql;
 using System.Collections.Generic;
 using System.Linq;
-using AutoSellBilet.Views;
 using AutoSellBilet.Dao.Date;
 using AutoSellBilet.Hardik.Model;
 using Microsoft.EntityFrameworkCore;
@@ -78,6 +77,7 @@ public partial class OtmenaWindow : Window
             ComboBron.ItemsSource = bron;
 
             List<Bilet> bilet = bd.Bilets.Include(a => a.Zritel).ToList();
+            List<Bilet> biletik = bd.Bilets.Include(a => a.SeansMesta.Mesto).ToList();
             bilet = bilet.Where(a => a.ZritelGuid == _currentUser.Guid && a.Status == "актуален").ToList();
             ComboBilet.ItemsSource = bilet;
         }
