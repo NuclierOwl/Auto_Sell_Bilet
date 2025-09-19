@@ -17,8 +17,6 @@
 				<DataTemplate>
 					<Grid RowDefinitions="*,*,*,*,*" ColumnDefinitions="auto,auto,auto,auto,auto">
 						<TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Film}"/>
-						<TextBlock Grid.Row="0" Grid.Column="1" Text="  ||  Место:"/>
-						<TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Mesto}"/>
 						<TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Status}"/>
 					</Grid>
 				</DataTemplate>
@@ -33,20 +31,26 @@
 				  Name="ComboBilet">
 			<ListBox.ItemTemplate>
 				<DataTemplate>
-					<Grid RowDefinitions="*,*,*,*,*">
-						<TextBlock Grid.Row="0" Text="{Binding Status}"/>
-						<TextBlock Grid.Row="1" Text="{Binding RowNumber}"/>
-						<TextBlock Grid.Row="2" Text="{Binding MestoNumber}"/>
+					<Grid RowDefinitions="*,*,*,*,*" ColumnDefinitions="*,*,*,*,*">
+						<TextBlock Grid.Row="0" Grid.Column="0" Text="билет номер: "/>
+						<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Id}"/>
+						
+						<TextBlock Grid.Row="1" Grid.Column="0" Text="Ряд в зале: "/>
+						<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SeansMesta.Mesto.RowNumber}"/>
+						
+						<TextBlock Grid.Row="1" Grid.Column="2" Text="||| Номер места: "/>
+						<TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding SeansMesta.Mesto.MestoNumber}"/>
 					</Grid>
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 		</ListBox>
-		
+
 		<StackPanel
 			Grid.Row="3" Grid.Column="0"
 			Grid.RowSpan="3" Orientation="Horizontal">
-		<Button Click="OtmenaBilet_Click" Content="Отмена билета"/>
-		<Button Click="Nazad_Click" Content="Назад"/>
-	</StackPanel>
+			<Button Click="OtmenaBilet_Click" Content="Отмена билета"/> 
+			<Button Click="OtmenaBron_Click" Content="Отмена бронирования"/>
+			<Button Click="Nazad_Click" Content="Назад"/>
+		</StackPanel>
 	</Grid>
 </Window>

@@ -1,5 +1,5 @@
 ﻿using AutoSellBilet.Dao;
-using AutoSellBilet.Hardik.Model;
+using AutoSellBilet.Dao.Model;
 using AutoSellBilet.ViewModels;
 using Avalonia.Controls;
 

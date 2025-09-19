@@ -1,12 +1,16 @@
 ﻿using AutoSellBilet.Dao;
+using AutoSellBilet.Dao.Date;
 using AutoSellBilet.Hardik.Connector;
 using AutoSellBilet.Hardik.Dop;
-using AutoSellBilet.Hardik.Model;
+using AutoSellBilet.Dao.Model;
 using Avalonia.Controls;
+using Microsoft.EntityFrameworkCore;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using AutoSellBilet.Hardik.Date;
 
 namespace AutoSellBilet.ViewModels
 {
@@ -20,6 +24,8 @@ namespace AutoSellBilet.ViewModels
         private KinoDao _selectedFilm;
         private User _selectedUser;
         private User _currentUser;
+        private List<Mestum> SeansMest;
+        private Mestum _selectedSeansMest;
         private MestoDao _selectedSeat;
         private decimal _ticketPrice;
         private int _hallNumber;
@@ -77,6 +83,11 @@ namespace AutoSellBilet.ViewModels
             get => _selectedSeat;
             set => this.RaiseAndSetIfChanged(ref _selectedSeat, value);
         }
+        public Mestum SelectedSeatM
+        {
+            get => _selectedSeansMest;
+            set => this.RaiseAndSetIfChanged(ref _selectedSeansMest, value);
+        }
 
         public decimal TicketPrice
         {
@@ -96,12 +107,12 @@ namespace AutoSellBilet.ViewModels
             set => this.RaiseAndSetIfChanged(ref _priceInfo, value);
         }
 
-        public void LoadData()
+        public void LoadData() // подгрузка данных
         {
             using (var db = new DateBaseConnection())
             {
                 Kino = new ObservableCollection<KinoDao>(db.GetAllKino());
-                //Users = new ObservableCollection<User>(db.GetAllUsers());
+                Users = new ObservableCollection<User>(db.GetAllUsers());
                 _halls = new ObservableCollection<ZalsDao>(db.GetAllZals());
                 Seats = new ObservableCollection<MestoDao>(db.GetAllMesta());
                 _seans = new ObservableCollection<SeansDao>(db.GetAllSeans());
@@ -110,7 +121,20 @@ namespace AutoSellBilet.ViewModels
             }
         }
 
-        private void LoadSeatsForFilm()
+        private void Get()
+        {
+            using (var db = new dbBileter())
+            {
+                List<Mestum> mestas = db.Mesta
+                    .Include(m=> m.Zal)
+                    .Where(m=> m.MestoNumber == SelectedFilm.Nomer_zala && m.Status == "свободно")
+                    .ToList();
+
+                SeansMest = mestas;
+            }
+        }
+
+        private void LoadSeatsForFilm() // подгрузка мест под фильм
         {
             if (SelectedFilm == null)
             {
@@ -148,7 +172,7 @@ namespace AutoSellBilet.ViewModels
             }
         }
 
-        private void UpdateTicketInfo()
+        private void UpdateTicketInfo() // строчка с инофой о билете под боксами
         {
             if (SelectedFilm != null && SelectedSeat != null)
             {
@@ -169,7 +193,7 @@ namespace AutoSellBilet.ViewModels
             }
         }
 
-        public bool BuyTicket()
+        public bool BuyTicket() // покубка билетов
         {
             var curentUser = CurrentUser;
            if (SelectedFilm == null || curentUser == null || SelectedSeat == null)
@@ -193,18 +217,22 @@ namespace AutoSellBilet.ViewModels
                 if (seansMestaId <= 0)
                     return false;
 
-                bool success = db.AddBilet(seansMestaId, CurrentUser.Guid, "актуален");
 
-                if (success)
+
+                if (bron != null)
                 {
                     db.UpdateSeatStatus(seansMestaId, "занято");
-
-                   // if (bron == null)
-                    db.AddBiletBron(seansMestaId, SelectedFilm.Name, CurrentUser.Guid);
-
+                    db.AddBilet(seansMestaId, CurrentUser.Guid, SelectedFilm.Name, "актуален");
+                    LoadData();
+                    return true;
                 }
-
-                return success;
+                else {
+                    db.UpdateSeatStatus(seansMestaId, "занято");
+                    db.AddBiletBron(seansMestaId, SelectedFilm.Name, CurrentUser.Guid);
+                    db.AddBilet(seansMestaId, CurrentUser.Guid, SelectedFilm.Name, "актуален");
+                    LoadData();
+                    return true;
+                }
             }
         }
         public void Otmena()

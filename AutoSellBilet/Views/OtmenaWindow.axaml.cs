@@ -1,14 +1,15 @@
 using AutoSellBilet.Dao;
+using AutoSellBilet.Dao.Date;
 using AutoSellBilet.Hardik.Connector;
+using AutoSellBilet.Hardik.Dop;
+using AutoSellBilet.Dao.Model;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using AutoSellBilet.Hardik.Dop;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.Collections.Generic;
 using System.Linq;
-using AutoSellBilet.Dao.Date;
-using AutoSellBilet.Hardik.Model;
-using Microsoft.EntityFrameworkCore;
+using AutoSellBilet.Hardik.Date;
 
 namespace AutoSellBilet;
 
@@ -70,15 +71,20 @@ public partial class OtmenaWindow : Window
 
     private void Get()
     {
-        using (var bd = new bdTablicki())
+        using (var bd = new dbBileter())
         {
-            List<Bron> bron = bd.Brons.Include(a => a.ZritelNavigation).ToList();
-            bron = bron.Where(a => a.Zritel == _currentUser.Guid && a.Status == "актуален").ToList();
+            List<Bron> bron = bd.Brons
+                .Include(a => a.ZritelNavigation)
+                .Where(a => a.Zritel == _currentUser.Guid && a.Status == "актуален")
+                .ToList();
             ComboBron.ItemsSource = bron;
 
-            List<Bilet> bilet = bd.Bilets.Include(a => a.Zritel).ToList();
-            List<Bilet> biletik = bd.Bilets.Include(a => a.SeansMesta.Mesto).ToList();
-            bilet = bilet.Where(a => a.ZritelGuid == _currentUser.Guid && a.Status == "актуален").ToList();
+            List<Bilet> bilet = bd.Bilets
+                .Include(a => a.Zritel)
+                .Include(a => a.SeansMesta)
+                .ThenInclude(t => t.Mesto)
+                .Where(a => a.ZritelGuid == _currentUser.Guid && a.Status == "актуален")
+                .ToList();
             ComboBilet.ItemsSource = bilet;
         }
     }
@@ -112,59 +118,81 @@ public partial class OtmenaWindow : Window
         return null;
     }
 
-    private void CancelBron_Click(object sender, RoutedEventArgs e)
+    private void OtmenaBilet_Click(object sender, RoutedEventArgs e)
     {
-        var selectedBron = ComboBron.SelectedItem as BronDao;
-        if (selectedBron == null)
+        var selectedBilet = ComboBilet.SelectedItem as Bilet;
+        if (selectedBilet == null)
         {
-            AllNeded.Message("Выберите бронирование для отмены", this);
+            AllNeded.Message("Выберите билет для отмены", this);
             return;
         }
 
         using (var dbConnect = new DateBaseConnection())
         {
             using (var cmd = new NpgsqlCommand(
-                "DELETE FROM public.bron WHERE zritel = @guid AND film = @film AND mesto = @mesto",
+                "DELETE FROM public.bilets WHERE id = @id;" +
+                "UPDATE public.seans_mesta SET status = 'свободно' WHERE id = @id",
                 dbConnect.GetConnection))
             {
-                cmd.Parameters.AddWithValue("@guid", selectedBron.guid);
-                cmd.Parameters.AddWithValue("@film", selectedBron.film);
-                cmd.Parameters.AddWithValue("@mesto", selectedBron.mesto);
+                cmd.Parameters.AddWithValue("@id", selectedBilet.Id);
+                cmd.Parameters.AddWithValue("@seans_mesta_id", selectedBilet.SeansMestaId);
+                cmd.ExecuteNonQuery();
 
                 int result = cmd.ExecuteNonQuery();
-                if (result > 0)
+                if (result >= 0)
                 {
-                    AllNeded.Message("Бронирование успешно отменено", this);
+                    AllNeded.Message("Билет успешно отменено", this);
                     LoadUserData();
+                    Get();
                 }
                 else
                 {
-                    AllNeded.Message("Ошибка при отмене бронирования", this);
+                    AllNeded.Message("Ошибка при отмене билета", this);
+                    LoadUserData();
+                    Get();
                 }
             }
         }
     }
 
-    private void OtmenaBilet_Click(object sender, RoutedEventArgs e)
+    private void OtmenaBron_Click(object sender, RoutedEventArgs e)
     {
         var selectedBron = ComboBron.SelectedItem as Bron;
         if (selectedBron == null)
         {
-            AllNeded.Message("Выберите билет для возврата", this);
+            AllNeded.Message("Выберите бронь для возврата", this);
             return;
         }
 
         using (var dbConnect = new DateBaseConnection())
         {
+            //int rez = 0;
+
+            //await using (var cmd = new NpgsqlCommand(
+            // "SELECT seans_mesta_id FROM public.bilets WHERE zritel_guid = @id and film_bilet = @film;",
+            // dbConnect.GetConnection))
+            //{
+            //    cmd.Parameters.AddWithValue("@id", selectedBron.Zritel);
+            //    cmd.Parameters.AddWithValue("@film", selectedBron.Film);
+
+            //    await using (var reader = await cmd.ExecuteReaderAsync())
+            //    {
+            //        if (await reader.ReadAsync())
+            //        {
+            //            rez = reader.GetInt32(reader.GetOrdinal("seans_mesta_id"));
+            //        }
+            //    }
+            //}
+
             using (var cmd = new NpgsqlCommand(
-                "DELETE FROM public.bilets WHERE zritel_guid = @id AND seans_mesta_id = @seans_mesta_id;" +
-                "DELETE FROM public.bron WHERE mesto = @zritel_guid",
+                "DELETE FROM public.bron WHERE mesto = @seans_mesta_id;" +
+                "DELETE FROM public.bilets WHERE zritel_guid = @id and film_bilet = @film",
                 dbConnect.GetConnection))
             {
                 cmd.Parameters.AddWithValue("@id", selectedBron.Zritel);
                 cmd.Parameters.AddWithValue("@seans_mesta_id", selectedBron.Mesto);
-                cmd.Parameters.AddWithValue("@zritel_guid", selectedBron.Mesto);
-                cmd.ExecuteNonQuery();
+                cmd.Parameters.AddWithValue("@film", selectedBron.Film);
+                cmd.ExecuteReaderAsync();
             }
 
             using (var cmd = new NpgsqlCommand(
@@ -172,7 +200,9 @@ public partial class OtmenaWindow : Window
                 dbConnect.GetConnection))
             {
                 cmd.Parameters.AddWithValue("@id", selectedBron.Mesto);
-                cmd.ExecuteNonQuery();
+                //cmd.Parameters.AddWithValue("@mesto", );
+
+                cmd.ExecuteReaderAsync();
             }
 
             AllNeded.Message("Билет успешно возвращен", this);

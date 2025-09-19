@@ -29,8 +29,9 @@
 		<TextBlock Text="{Binding HallNumber}" FontSize="14"/>
 
 		<TextBlock Text="Место" FontWeight="Bold"/>
-		<ComboBox ItemsSource="{Binding Seats}"
-          SelectedItem="{Binding SelectedSeat}">
+
+		<ComboBox ItemsSource="{Binding Seats}" 
+          SelectedItem="{Binding SelectedSeat}">  <!--Выподашка с местами-->
 			<ComboBox.ItemTemplate>
 				<DataTemplate>
 					<StackPanel Orientation="Horizontal" Spacing="5">
@@ -42,7 +43,25 @@
 				</DataTemplate>
 			</ComboBox.ItemTemplate>
 		</ComboBox>
-
+		
+		
+		<!-- Этого не существует
+		<ListBox ItemsSource="{Binding Seats}"
+				 SelectedItem="{Binding SelectedSeat}"
+				 Name="BiletList"> 
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<Grid RowDefinitions="*,*,*,*,*" ColumnDefinitions="*,*,*,*,*">
+						<Image Grid.Row="0" Grid.Column="0" Width="50" Height="75" Source="C:\Users\PC\source\Dopolnenia\Kartinki\Iconki\Ico\1b5c5377d0a8b10b36c26dcad5a5cdf3.ico"/>
+						<TextBlock Grid.Row="1" Grid.Column="0" Text="Ряд:"/>
+						<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding row_number}"/>
+						<TextBlock Grid.Row="2" Grid.Column="0" Text=" Место:"/>
+						<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding mesto_number}"/>
+					</Grid>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+		-->
 		<TextBlock Text="Информация о билете" FontWeight="Bold"/>
 		<TextBlock Text="{Binding PriceInfo}" FontSize="14" Foreground="Green"/>
 

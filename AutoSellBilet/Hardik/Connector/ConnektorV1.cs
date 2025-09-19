@@ -1,8 +1,9 @@
 ﻿using AutoSellBilet.Dao;
-using AutoSellBilet.Hardik.Model;
+using AutoSellBilet.Dao.Model;
 using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace AutoSellBilet.Hardik.Connector;
 internal class DateBaseConnection : IDisposable
@@ -359,16 +360,18 @@ internal class DateBaseConnection : IDisposable
         }
     }
 
-    public bool AddBilet(int seansMestaId, Guid zritelGuid, string status = "актуален")
+    public bool AddBilet(int seansMestaId, Guid zritelGuid, string film, string status = "актуален")
     {
+
         using (var cmd = new NpgsqlCommand(@"
-        INSERT INTO public.bilets (seans_mesta_id, zritel_guid, status) 
-        VALUES (@seansMestaId, @zritelGuid, @status)",
+        INSERT INTO public.bilets (seans_mesta_id, zritel_guid, status, film_bilet) 
+        VALUES (@seansMestaId, @zritelGuid, @status, @film)",
             _connection))
         {
             cmd.Parameters.AddWithValue("@seansMestaId", seansMestaId);
             cmd.Parameters.AddWithValue("@zritelGuid", zritelGuid);
             cmd.Parameters.AddWithValue("@status", status);
+            cmd.Parameters.AddWithValue("@film", film);
 
             return cmd.ExecuteNonQuery() > 0;
         }
